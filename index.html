@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Rock Paper Scissors</title>
+    <style>
+        :root {
+            /* Light theme variables */
+            --bg-gradient-light: linear-gradient(135deg, #6e8efb, #a777e3);
+            --button-gradient-light: linear-gradient(to right, #4776E6, #8E54E9);
+            --text-color-light: #333;
+            --container-bg-light: rgba(255, 255, 255, 0.9);
+            --choice-bg-light: #f8f9fa;
+            
+            /* Dark theme variables */
+            --bg-gradient-dark: linear-gradient(135deg, #232526, #414345);
+            --button-gradient-dark: linear-gradient(to right, #414345, #232526);
+            --text-color-dark: #f8f9fa;
+            --container-bg-dark: rgba(30, 30, 30, 0.9);
+            --choice-bg-dark: #2c2c2c;
+            
+            /* Current theme variables (default to light) */
+            --bg-gradient: var(--bg-gradient-light);
+            --button-gradient: var(--button-gradient-light);
+            --text-color: var(--text-color-light);
+            --container-bg: var(--container-bg-light);
+            --choice-bg: var(--choice-bg-light);
+        }
+
+        .dark-mode {
+            --bg-gradient: var(--bg-gradient-dark);
+            --button-gradient: var(--button-gradient-dark);
+            --text-color: var(--text-color-dark);
+            --container-bg: var(--container-bg-dark);
+            --choice-bg: var(--choice-bg-dark);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            background: var(--button-gradient);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: titleGlow 2s infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from {
+                text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+            }
+            to {
+                text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 
+                             0 0 30px rgba(255, 255, 255, 0.5);
+            }
+        }
+
+        .score-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 20px;
+            background: var(--container-bg);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .score-box {
+            padding: 10px 20px;
+        }
+
+        .score-label {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .score {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .choices-container {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0 40px;
+            flex-wrap: wrap;
+        }
+
+        .choice {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.5rem;
+            background: var(--choice-bg);
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .choice:hover {
+            transform: translateY(-10px) scale(1.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .choice::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border-radius: 50%;
+            background: var(--button-gradient);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .choice:hover::before {
+            opacity: 0.4;
+        }
+
+        .choice.selected {
+            transform: scale(1.2);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8);
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from {
+                box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            }
+            to {
+                box-shadow: 0 0 30px rgba(255, 215, 0, 0.9), 
+                            0 0 40px rgba(255, 215, 0, 0.4);
+            }
+        }
+
+        .result-container {
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-message {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .result-message.win {
+            color: #4CAF50;
+            animation: winPulse 0.5s ease;
+        }
+
+        .result-message.lose {
+            color: #F44336;
+            animation: loseShake 0.5s ease;
+        }
+
+        .result-message.tie {
+            color: #FFC107;
+        }
+
+        @keyframes winPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes loseShake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+
+        .computer-choice {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+
+        .computer-icon {
+            margin-top: 10px;
+            font-size: 2.5rem;
+        }
+
+        .buttons-container {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: var(--button-gradient);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 30px;
+            border-radius: 15px;
+            background: var(--container-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 5px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-circle {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--button-gradient);
+            transition: all 0.3s ease;
+            transform: translateX(0);
+        }
+
+        .dark-mode .toggle-circle {
+            transform: translateX(30px);
+        }
+
+        .style-label {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Different choice styles */
+        .style-1 .choice {
+            background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+        }
+
+        .style-2 .choice {
+            background: linear-gradient(to bottom, #a1c4fd, #c2e9fb);
+        }
+
+        .style-3 .choice {
+            background: linear-gradient(to bottom, #ffecd2, #fcb69f);
+        }
+
+        .style-4 .choice {
+            background: linear-gradient(to bottom, #84fab0, #8fd3f4);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .choice {
+                width: 90px;
+                height: 90px;
+                font-size: 2.5rem;
+            }
+            
+            .score {
+                font-size: 2rem;
+            }
+            
+            .result-message {
+                font-size: 1.5rem;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            button {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body class="style-1">
+    <div class="theme-toggle" id="themeToggle">
+        <div class="toggle-circle"></div>
+    </div>
+
+    <div class="header">
+        <h1>Rock Paper Scissors</h1>
+        <div class="score-container">
+            <div class="score-box">
+                <div class="score-label">Your Score</div>
+                <div class="score" id="userScore">0</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">Computer Score</div>
+                <div class="score" id="computerScore">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="choices-container">
+        <div class="choice" data-choice="rock">✊</div>
+        <div class="choice" data-choice="paper">✋</div>
+        <div class="choice" data-choice="scissors">✌️</div>
+    </div>
+
+    <div class="result-container">
+        <div class="result-message" id="resultMessage">Choose an option to play!</div>
+        <div class="computer-choice">
+            <div>Computer chose:</div>
+            <div class="computer-icon" id="computerChoiceIcon">❓</div>
+        </div>
+    </div>
+
+    <div class="buttons-container">
+        <button id="playButton">Play Game</button>
+        <button id="resetButton">Reset Game</button>
+        <button id="changeStyleButton">Change Style</button>
+    </div>
+
+    <div class="style-label">Current Style: Gradient 1</div>
+
+    <script>
+        // Game variables
+        let userScore = 0;
+        let computerScore = 0;
+        let userChoice = null;
+        let currentStyle = 1;
+        let isDarkMode = false;
+        
+        // DOM elements
+        const userScoreElement = document.getElementById('userScore');
+        const computerScoreElement = document.getElementById('computerScore');
+        const resultMessageElement = document.getElementById('resultMessage');
+        const computerChoiceIconElement = document.getElementById('computerChoiceIcon');
+        const choicesElements = document.querySelectorAll('.choice');
+        const playButton = document.getElementById('playButton');
+        const resetButton = document.getElementById('resetButton');
+        const changeStyleButton = document.getElementById('changeStyleButton');
+        const themeToggle = document.getElementById('themeToggle');
+        const styleLabel = document.querySelector('.style-label');
+        const bodyElement = document.body;
+        
+        // Choice click event
+        choicesElements.forEach(choice => {
+            choice.addEventListener('click', () => {
+                // Remove selected class from all choices
+                choicesElements.forEach(c => c.classList.remove('selected'));
+                
+                // Add selected class to clicked choice
+                choice.classList.add('selected');
+                
+                // Set user choice
+                userChoice = choice.getAttribute('data-choice');
+            });
+        });
+        
+        // Play button click event
+        playButton.addEventListener('click', () => {
+            if (!userChoice) {
+                resultMessageElement.textContent = "Please select an option first!";
+                return;
+            }
+            
+            // Computer makes a random choice
+            const choices = ['rock', 'paper', 'scissors'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            
+            // Display computer's choice
+            computerChoiceIconElement.textContent = 
+                computerChoice === 'rock' ? '✊' : 
+                computerChoice === 'paper' ? '✋' : '✌️';
+            
+            // Determine the winner
+            const result = getResult(userChoice, computerChoice);
+            
+            // Update scores and display message
+            if (result === 'win') {
+                userScore++;
+                userScoreElement.textContent = userScore;
+                resultMessageElement.textContent = `You win! ${userChoice} beats ${computerChoice}`;
+                resultMessageElement.className = 'result-message win';
+            } else if (result === 'lose') {
+                computerScore++;
+                computerScoreElement.textContent = computerScore;
+                resultMessageElement.textContent = `You lose! ${computerChoice} beats ${userChoice}`;
+                resultMessageElement.className = 'result-message lose';
+            } else {
+                resultMessageElement.textContent = "It's a tie!";
+                resultMessageElement.className = 'result-message tie';
+            }
+        });
+        
+        // Reset button click event
+        resetButton.addEventListener('click', () => {
+            userScore = 0;
+            computerScore = 0;
+            userScoreElement.textContent = '0';
+            computerScoreElement.textContent = '0';
+            resultMessageElement.textContent = 'Choose an option to play!';
+            resultMessageElement.className = 'result-message';
+            computerChoiceIconElement.textContent = '❓';
+            choicesElements.forEach(c => c.classList.remove('selected'));
+            userChoice = null;
+        });
+        
+        // Change style button click event
+        changeStyleButton.addEventListener('click', () => {
+            // Remove current style class
+            bodyElement.classList.remove(`style-${currentStyle}`);
+            
+            // Increment style counter (cycle through 4 styles)
+            currentStyle = currentStyle % 4 + 1;
+            
+            // Add new style class
+            bodyElement.classList.add(`style-${currentStyle}`);
+            
+            // Update style label
+            styleLabel.textContent = `Current Style: Gradient ${currentStyle}`;
+        });
+        
+        // Theme toggle click event
+        themeToggle.addEventListener('click', () => {
+            isDarkMode = !isDarkMode;
+            if (isDarkMode) {
+                bodyElement.classList.add('dark-mode');
+            } else {
+                bodyElement.classList.remove('dark-mode');
+            }
+        });
+        
+        // Function to determine game result
+        function getResult(user, computer) {
+            if (user === computer) return 'tie';
+            
+            if (
+                (user === 'rock' && computer === 'scissors') ||
+                (user === 'paper' && computer === 'rock') ||
+                (user === 'scissors' && computer === 'paper')
+            ) {
+                return 'win';
+            }
+            
+            return 'lose';
+        }
+    </script>
+</body>
+</html>
